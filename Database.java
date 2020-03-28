@@ -1,11 +1,13 @@
 // Forritið má þýða og keyra svona á Windows:
 //   javac Sample.java
 //   java -cp .;sqlite-jdbc-....jar Database
-// � Unix:
+//
+//   Unix:
 //   javac Sample.java
 //   java -cp .:sqlite-jdbc-....jar Database
 
 import java.sql.*;
+import java.util.Random;
 
 public class Database
 {
@@ -18,34 +20,84 @@ public class Database
     }
 
     public static void generateAirports() {
-        String[] Airports = {};
-        String[] Countries = {};
+        String[] Airports = { "Leifstod Airport, KEF", "Schönefeld Airport, BER", "Stuttgart Airport, STR", "Comiso Airport, CIY",
+            "Florence Airport, FLR", "Genoa Airport, GOA", "Munich Airport, MUC", "Strasbourg Airport, SXB",
+            "Toulon-Hyères Airport, TLN", "Bremen Airport, BRE", "Nuremberg Airport, NUE", "Kerry Airport, KIR",
+            "Shannon Airport, SNN", "Alghero Airport, AHO", "Ancona Airport, AOI", "Bari Airport, BRI",
+            "Bergamo Airport, BGY", "Bologna Airport, BLQ", "Brindisi Airport, BDS", "Cagliari Airport, CAG",
+            "Kutaisi Airport, KUT", "Tbilisi Airport, TBS", "Allgäu Airport, FMM", "Palermo Airport, PMO",
+            "Perugia Airport, PEG", "Pescara Airport, PSR", "Pisa Airport, PSA", "Dortmund Airport, DTM",
+            "Dresden Airport, DRS", "Düsseldorf Airport, DUS", "Frankfurt Airport, FRA", "Frankfurt-Hahn Airport, HHN",
+            "Friedrichshafen Airport, FDH", "Hamburg Airport, HAM", "Hanover Airport, HAJ", "Weeze Airport, NRN",
+            "Athens Airport, ATH", "Chania Airport, CHQ", "Corfu Airport, CFU", "Heraklion Airport, HER",
+            "Kos Airport, KGS", "Mykonos Airport, JMK", "Rhodes Airport, RHO", "Santorini Airport, JTR",
+            "Thessaloniki Airport, SKG", "Zante Airport, ZTH", "Budapest Airport, BUD", "Debrecen Airport, DEB",
+            "Keflavik Airport, KEF", "Cork Airport, ORK", "Dublin Airport, DUB", "Tirana Airport, TIA",
+            "Graz Airport, GRZ", "Innsbruck Airport, INN", "Klagenfurt Airport, KLU", "Linz Airport, LNZ",
+            "Salzburg Airport, SZG", "Vienna Airport, VIE", "Baku Airport, GYD", "Minsk Airport, MSQ",
+            "Antwerp Airport, ANR", "Brussels Airport, BRU", "Charleroi Airport, CRL", "Liege Airport, LGG",
+            "Ostend-Bruges Airport, BOS", "Sarajevo Airport, SJJ", "Tuzla Airport, TZL", "Burgas Airport, BOJ",
+            "Sofia Airport, SOF", "Varna Airport, VAR", "Dubrovnik Airport, DBV", "Pula Airport, PUY",
+            "Split Airport, SPU", "Zadar Airport, ZAD", "Zagreb Airport, ZAG", "Larnaca Airport, LCA",
+            "Paphos Airport, PFO", "Brno Airport, BRQ", "Prague Airport, PRG", "Aalborg Airport, AAL",
+            "Aarhus Airport, AAR", "Billund Airport, BLL", "Copenhagen Airport, CPH", "Vágar Airport, FAE",
+            "Tallinn Airport, TLL", "Helsinki Airport, HEL", "Oulu Airport, OUL", "Rovaniemi Airport, RVN",
+            "Tampere Airport, TMP", "Turku Airport, TKU", "Vaasa Airport, VAA", "Ajaccio Airport, AJA",
+            "Bastia Airport, BIA", "Bergerac Airport, EGC", "Biarritz Airport, BIQ", "Bordeaux Airport, BOD",
+            "Brest-Bretagne Airport, BES", "Lille Airport, LIL", "Marseille Airport, MRS", "Montpellier Airport, MPL",
+            "Nantes Airport, NTE", "Nice Airport, NCE", "John F. Kennedy Airport, NY" };
 
+        String[] Countries = { "Iceland", "Germany", "Germany", "Italy", "Italy", "Italy", "Germany", "France", "France", "Germany",
+            "Germany", "Ireland", "Ireland", "Italy", "Italy", "Italy", "Italy", "Italy", "Italy", "Italy",
+            "Georgia", "Georgia", "Memmingen", "Italy", "Italy", "Italy", "Italy", "Germany", "Germany", "Germany",
+            "Germany", "Germany", "Germany", "Germany", "Germany", "Germany", "Greece", "Greece", "Greece", "Greece",
+            "Greece", "Greece", "Greece", "Greece", "Greece", "Greece", "Hungary", "Hungary", "Iceland", "Ireland",
+            "Ireland", "Albania", "Austria", "Austria", "Austria", "Austria", "Austria", "Austria", "Azerbaijan", "Belarus",
+            "Belgium", "Belgium", "Belgium", "Belgium", "Belgium", "Bosnia-Herzegovina", "Bosnia-Herzegovina", "Bulgaria", "Bulgaria", "Bulgaria",
+            "Croatia", "Croatia", "Croatia", "Croatia", "Croatia", "Cyprus", "Cyprus", "Czech-Republic", "Czech-Republic", "Denmark",
+            "Denmark", "Denmark", "Denmark", "Denmark", "Estonia", "Finland", "Finland", "Finland", "Finland", "Finland",
+            "Finland", "France", "France", "France", "France", "France", "France", "France", "France", "France", "France", "France", "USA" };
+
+        Random rand = new Random(); String accessibility;
+        int n = 0;
         try {
             stmt.executeUpdate("drop table if exists Airport");
-            stmt.executeUpdate("CREATE TABLE Airport ('airportname' STRING, accessability STRING, country STRING ,PRIMARY KEY(airportname))");
+            stmt.executeUpdate("CREATE TABLE Airport ('airportname' STRING, accessibility STRING, country STRING ,PRIMARY KEY(airportname))");
 
-            pstmt.executeUpdate("insert into Airport values(?,?,?)");
+            pstmt = conn.prepareStatement("insert into Airport values(?,?,?)");
 
             // Insert airports into db
             for (int i = 0; i < Airports.length; i++){
-                pstmt.setString(1, Airports[i]);   //Note index starts with 1
-                pstmt.setString(2, Airports[i]);
-                pstmt.setInt(2, i);
+
+                n = rand.nextInt(2);
+                switch (n) {
+                   case 0:
+                       accessibility = "Wheelchair-accessible";
+                       break;
+                   case 1:
+                       accessibility = "Not wheelchair-accessible";
+                       break;
+                   default:
+                       accessibility = "Unknown";
+                }
+
+                pstmt.setString(1, Airports[i]   ); //Note index starts with 1
+                pstmt.setString(2, accessibility );
+                pstmt.setString(3, Countries[i]  );
 
                 // For debugging:
-                // System.out.println(Airports[i]);
-                // System.out.println(i);
+                System.out.println(Airports[i] + " -- " + Countries[i]);
+                System.out.println(accessibility);
 
-                pstmt.executeUpdate();
+                pstmt.addBatch();
             }
-
-            // pstmt.close();
-            // conn.close();
+            pstmt.executeBatch();
+            conn.commit();
 
         } catch(SQLException e) {
-            System.out.println("Error in generateCompany");
+            System.out.println("Error in generateAirport");
         }
+        return;
     }
 
     public static void generateCustomer() {
@@ -56,6 +108,7 @@ public class Database
             "Ellar", "Päivi", "Máel", "Coluim", "Arnar", "Borghildur",
             "Guðríður", "Greer", "Tryggvi","Hrafnkell", "Erskine", "Gordon",
             "Anniina", "Sylvi", "Snorri", "Matthias" };
+
 
         try {
             stmt.executeUpdate("drop table if exists Customer");
@@ -69,25 +122,25 @@ public class Database
                 pstmt.setInt(2, i);
 
                 // For debugging:
-                // System.out.println(Names[i]);
-                // System.out.println(i);
+                System.out.println(Names[i]);
+                System.out.println(i);
 
-                pstmt.executeUpdate();
+                // pstmt.executeUpdate();
+                pstmt.addBatch();
             }
-
-            // pstmt.close();
-            // conn.close();
+            pstmt.executeBatch();
+            conn.commit();
 
         } catch(SQLException e) {
-            System.out.println("Error in generateCompany");
+            System.out.println("Error in generateCustomer");
         }
+        return;
     }
 
     public static void generateCompany() {
         String[] Airlines = { "Air Iceland Connect", "Icelandair", "Eagle Air",
             "Norlandair", "Finnair", "Scandinavian Airlines",
-            "Ryanair", "Lufthansa Group", "easyJet",
-            "SAS", "Wizz Air" };
+            "Ryanair", "Lufthansa Group", "easyJet", "SAS", "Wizz Air" };
 
         try {
             stmt.executeUpdate("drop table if exists Company");
@@ -102,20 +155,19 @@ public class Database
                 pstmt.setInt(2, i);
 
                 // For debugging;
-                // System.out.println(Airlines[i]);
-                // System.out.println(i);
-                pstmt.executeUpdate();
+                System.out.println(Airlines[i]);
+                System.out.println(i);
+                pstmt.addBatch();
             }
-
-            // pstmt.close();
-            // conn.close();
-            return;
+            pstmt.executeBatch();
+            conn.commit();
 
         } catch(SQLException e) {
             System.out.println("Error in generateCompany");
         }
-
+        return;
     }
+
     public static void generateSeat() {
 
     }
@@ -128,6 +180,7 @@ public class Database
         try {
             // Create a database connection:
             conn = DriverManager.getConnection("jdbc:sqlite:database.db");
+            conn.setAutoCommit(false);
             stmt = conn.createStatement();
 
             //statement.setQueryTimeout(30);  // set timeout to 30 sec.
@@ -140,11 +193,7 @@ public class Database
             generateCustomer();
 
             // Airport:
-            stmt.executeUpdate("drop table if exists Airport");
-            stmt.executeUpdate("CREATE TABLE Airport ('airportname' STRING, accessability STRING, country STRING ,PRIMARY KEY(airportname))");
-            stmt.executeUpdate("insert into Airport values('Leifstod KEF', 'wheelchair accessable', 'ICE')");
-            stmt.executeUpdate("insert into Airport values('Schönefeld BER', 'wheelchair accessable', 'GER')");
-            stmt.executeUpdate("insert into Airport values('John F. Kennedy NY', 'wheelchair accessable', 'USA')");
+            generateAirports();
 
             // Seat:
             stmt.executeUpdate("drop table if exists Seat");
@@ -160,7 +209,7 @@ public class Database
 
             pstmt.close();
             conn.close();
-            
+ 
             //statement.executeUpdate("insert into Flights values('FI602', '2020-03-27', 'boeing 777', 'PARIS', 'KEF')");
             /*ResultSet rs = statement.executeQuery("select * from person");
               while(rs.next())
@@ -170,8 +219,7 @@ public class Database
             System.out.println("id = " + rs.getInt("id"));
               }
               rs.close();*/
-        } catch(SQLException e)
-        {
+        } catch(SQLException e) {
             // if the error message is "out of memory", 
             // it probably means no database file is found
             System.err.println(e.getMessage());
