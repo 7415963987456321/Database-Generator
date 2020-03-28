@@ -1,3 +1,5 @@
+// Authors: Hrafnkell Sigurðarson, Kári Viðar Jónsson.
+//
 // Forritið má þýða og keyra svona á Windows:
 //   javac Sample.java
 //   java -cp .;sqlite-jdbc-....jar Database
@@ -9,17 +11,18 @@
 import java.sql.*;
 import java.util.Random;
 
-public class Database
-{
-    static Statement stmt;
+public class Database {
+
+    static Statement         stmt;
     static PreparedStatement pstmt;
-    static Connection conn;
+    static Connection        conn;
 
     public static void generateFlights() {
-
+        
     }
 
     public static void generateAirports() {
+        // Giant string mess
         String[] Airports = { "Leifstod Airport, KEF", "Schönefeld Airport, BER", "Stuttgart Airport, STR", "Comiso Airport, CIY",
             "Florence Airport, FLR", "Genoa Airport, GOA", "Munich Airport, MUC", "Strasbourg Airport, SXB",
             "Toulon-Hyères Airport, TLN", "Bremen Airport, BRE", "Nuremberg Airport, NUE", "Kerry Airport, KIR",
@@ -96,6 +99,7 @@ public class Database
 
         } catch(SQLException e) {
             System.out.println("Error in generateAirport");
+            System.err.println(e.getMessage());
         }
         return;
     }
@@ -109,7 +113,6 @@ public class Database
             "Guðríður", "Greer", "Tryggvi","Hrafnkell", "Erskine", "Gordon",
             "Anniina", "Sylvi", "Snorri", "Matthias" };
 
-
         try {
             stmt.executeUpdate("drop table if exists Customer");
             stmt.executeUpdate("CREATE TABLE Customer (username STRING, userid INTEGER, PRIMARY KEY(userid))");
@@ -122,8 +125,7 @@ public class Database
                 pstmt.setInt(2, i);
 
                 // For debugging:
-                System.out.println(Names[i]);
-                System.out.println(i);
+                System.out.println(i + " : " +  Names[i]);
 
                 // pstmt.executeUpdate();
                 pstmt.addBatch();
@@ -133,6 +135,7 @@ public class Database
 
         } catch(SQLException e) {
             System.out.println("Error in generateCustomer");
+            System.err.println(e.getMessage());
         }
         return;
     }
@@ -164,11 +167,83 @@ public class Database
 
         } catch(SQLException e) {
             System.out.println("Error in generateCompany");
+            System.err.println(e.getMessage());
         }
         return;
     }
 
     public static void generateSeat() {
+        // Generate random Seats
+        int price, n, r, r2 = 0;
+        String classtype;
+
+        Random rand = new Random();
+
+        String[] Seats = { "01A", "14D", "48I"};
+        String[] FlightNR = new String[Seats.length];
+        String[] FlightPrefix = { "5X", "AA", "AC", "AM", "AS", "AY", "B6", "BA",
+            "BC", "BG", "CI", "CP", "D5", "D7", "DJ", "DL",
+            "EK", "EY", "F",  "FX", "HA", "JL", "KE", "LA",
+            "LH", "LJ", "LO", "LY", "MH", "MM", "NH", "NK",
+            "NU", "NZ", "QF", "QK", "QR", "SG", "SK", "SQ",
+            "TK", "TN", "UA", "VA", "WN", "WS",
+        };
+
+        for (int i = 0; i < Seats.length; i++){
+            r  = rand.nextInt(FlightPrefix.length);
+
+            r2 = rand.nextInt(999);
+            FlightNR[i] = "" + FlightPrefix[r] + (1+r2);
+            System.out.print("FLightnr: " + FlightNR[i] + "\n" );
+        };
+
+        try {
+            stmt.executeUpdate("drop table if exists Seat");
+            stmt.executeUpdate("CREATE TABLE Seat (seatnumber VARCHAR(4), flightnumber VARCHAR(8), class STRING, price VARCHAR(28), reservation STRING , PRIMARY KEY(seatnumber, flightnumber ), FOREIGN KEY(flightnumber) REFERENCES Flight(number), FOREIGN KEY(reservation) REFERENCES Customer(userid))");
+
+            pstmt = conn.prepareStatement("insert into Seat values(?,?,?,?,?)");
+
+            // Insert seats into db
+            for (int i = 0; i < Seats.length; i++){
+                // Generate random class
+                n = rand.nextInt(3);
+                switch (n) {
+                   case 0:
+                       classtype = "Economy";
+                       break;
+                   case 1:
+                       classtype = "First-class";
+                       break;
+                   case 2:
+                       classtype = "Business";
+                       break;
+                   default:
+                       classtype = "Unknown";
+                }
+
+                // Generate random price with lower bound 1000
+                price = 1000 + rand.nextInt(2999);
+
+                pstmt.setString(1, Seats[i]);    //Note index  starts with 1
+                pstmt.setString(2, FlightNR[i]);
+                pstmt.setString(3, classtype);
+                pstmt.setInt(   4,    price);
+                pstmt.setString(5, "NULL");      //Fix  later?
+
+                // For debugging:
+                System.out.println(i + " : " +  Seats[i]);
+
+                // pstmt.executeUpdate();
+                pstmt.addBatch();
+            }
+            pstmt.executeBatch();
+            conn.commit();
+
+        } catch(SQLException e) {
+            System.out.println("Error in generateSeat");
+            System.err.println(e.getMessage());
+        }
+        return;
 
     }
 
@@ -195,21 +270,19 @@ public class Database
             // Airport:
             generateAirports();
 
+
             // Seat:
-            stmt.executeUpdate("drop table if exists Seat");
-            stmt.executeUpdate("CREATE TABLE Seat (seatnumber VARCHAR(4), flightnumber VARCHAR(8), class STRING, price VARCHAR(28), reservation STRING , PRIMARY KEY(seatnumber, flightnumber ), FOREIGN KEY(flightnumber) REFERENCES Flight(number), FOREIGN KEY(reservation) REFERENCES Customer(userid))");
-            stmt.executeUpdate("insert into Seat values('01A', 'FI614', 'FIRST', 64.999, NULL)");
-            stmt.executeUpdate("insert into Seat values('14D', 'FI614', 'BUS', 38.765, NULL)");
-            stmt.executeUpdate("insert into Seat values('48I', 'FI614', 'ECO', 13.250, NULL)");
+            generateSeat();
 
             // Flight:
+            // conn.setAutoCommit(true); // Remove later
             stmt.executeUpdate("drop table if exists Flight");
             stmt.executeUpdate("CREATE TABLE Flight (number VARCHAR(24), takeOff DATETIME, landing DATETIME, origin STRING, dest STRING, aircraft VARCHAR(128), compname VARCHAR(128), amenities STRING, PRIMARY KEY (number, takeOff, origin), FOREIGN KEY(origin) REFERENCES Airport (airportname), FOREIGN KEY(dest) REFERENCES Airport (airportname), FOREIGN KEY(compname) REFERENCES Company (compname))");
             stmt.executeUpdate("insert into Flight values('FI614',  '2020-03-27 22:30:45', '2020-03-28 05:00:00', 'Leifstod KEF', 'John F. Kennedy NY', 'Boeing737max', 'ICELANDAIR', 'Food drinks and onboard shop')");
 
             pstmt.close();
             conn.close();
- 
+
             //statement.executeUpdate("insert into Flights values('FI602', '2020-03-27', 'boeing 777', 'PARIS', 'KEF')");
             /*ResultSet rs = statement.executeQuery("select * from person");
               while(rs.next())

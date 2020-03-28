@@ -1,0 +1,6 @@
+"5X", "AA", "AC", "AM", "AS", "AY", "B6", "BA",
+"BC", "BG", "CI", "CP", "D5", "D7", "DJ", "DL",
+"EK", "EY", "F" , "FX", "HA", "JL", "KE", "LA",
+"LH", "LJ", "LO", "LY", "MH", "MM", "NH", "NK",
+"NU", "NZ", "QF", "QK", "QR", "SG", "SK", "SQ",
+"TK", "TN", "UA", "VA", "WN", "WS",
