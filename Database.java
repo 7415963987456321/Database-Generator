@@ -1,12 +1,16 @@
 // Authors: Hrafnkell Sigurðarson, Kári Viðar Jónsson.
 //
+// Generates a random testing database.
+//
 // Forritið má þýða og keyra svona á Windows:
-//   javac Sample.java
+//   javac Database.java
 //   java -cp .;sqlite-jdbc-....jar Database
 //
 //   Unix:
-//   javac Sample.java
+//   javac Database.java
 //   java -cp .:sqlite-jdbc-....jar Database
+//
+//   Or use the makefile to compile, test, and run the database
 
 import java.sql.*;
 import java.util.Random;
@@ -16,10 +20,23 @@ public class Database {
     static Statement         stmt;
     static PreparedStatement pstmt;
     static Connection        conn;
+    static Random            rand = new Random();
 
-    public static void generateFlights() {
-        
-    }
+    // Data, don't fuck with this, needs to be in this order.
+    static String[] Airlines = { "Air Iceland Connect", "Icelandair", "Eagle Air",
+        "Norlandair", "Finnair", "Scandinavian Airlines",
+        "Ryanair", "Lufthansa Group", "easyJet", "SAS", "Wizz Air" };
+    static String[] Countries = { "Iceland", "Germany", "Germany", "Italy", "Italy", "Italy", "Germany", "France", "France", "Germany",
+        "Germany", "Ireland", "Ireland", "Italy", "Italy", "Italy", "Italy", "Italy", "Italy", "Italy",
+        "Georgia", "Georgia", "Memmingen", "Italy", "Italy", "Italy", "Italy", "Germany", "Germany", "Germany",
+        "Germany", "Germany", "Germany", "Germany", "Germany", "Germany", "Greece", "Greece", "Greece", "Greece",
+        "Greece", "Greece", "Greece", "Greece", "Greece", "Greece", "Hungary", "Hungary", "Iceland", "Ireland",
+        "Ireland", "Albania", "Austria", "Austria", "Austria", "Austria", "Austria", "Austria", "Azerbaijan", "Belarus",
+        "Belgium", "Belgium", "Belgium", "Belgium", "Belgium", "Bosnia-Herzegovina", "Bosnia-Herzegovina", "Bulgaria", "Bulgaria", "Bulgaria",
+        "Croatia", "Croatia", "Croatia", "Croatia", "Croatia", "Cyprus", "Cyprus", "Czech-Republic", "Czech-Republic", "Denmark",
+        "Denmark", "Denmark", "Denmark", "Denmark", "Estonia", "Finland", "Finland", "Finland", "Finland", "Finland",
+        "Finland", "France", "France", "France", "France", "France", "France", "France", "France", "France", "France", "France", "USA" };
+
 
     public static void generateAirports() {
         // Giant string mess
@@ -50,18 +67,7 @@ public class Database {
             "Brest-Bretagne Airport, BES", "Lille Airport, LIL", "Marseille Airport, MRS", "Montpellier Airport, MPL",
             "Nantes Airport, NTE", "Nice Airport, NCE", "John F. Kennedy Airport, NY" };
 
-        String[] Countries = { "Iceland", "Germany", "Germany", "Italy", "Italy", "Italy", "Germany", "France", "France", "Germany",
-            "Germany", "Ireland", "Ireland", "Italy", "Italy", "Italy", "Italy", "Italy", "Italy", "Italy",
-            "Georgia", "Georgia", "Memmingen", "Italy", "Italy", "Italy", "Italy", "Germany", "Germany", "Germany",
-            "Germany", "Germany", "Germany", "Germany", "Germany", "Germany", "Greece", "Greece", "Greece", "Greece",
-            "Greece", "Greece", "Greece", "Greece", "Greece", "Greece", "Hungary", "Hungary", "Iceland", "Ireland",
-            "Ireland", "Albania", "Austria", "Austria", "Austria", "Austria", "Austria", "Austria", "Azerbaijan", "Belarus",
-            "Belgium", "Belgium", "Belgium", "Belgium", "Belgium", "Bosnia-Herzegovina", "Bosnia-Herzegovina", "Bulgaria", "Bulgaria", "Bulgaria",
-            "Croatia", "Croatia", "Croatia", "Croatia", "Croatia", "Cyprus", "Cyprus", "Czech-Republic", "Czech-Republic", "Denmark",
-            "Denmark", "Denmark", "Denmark", "Denmark", "Estonia", "Finland", "Finland", "Finland", "Finland", "Finland",
-            "Finland", "France", "France", "France", "France", "France", "France", "France", "France", "France", "France", "France", "USA" };
-
-        Random rand = new Random(); String accessibility;
+        String accessibility;
         int n = 0;
         try {
             stmt.executeUpdate("drop table if exists Airport");
@@ -107,13 +113,14 @@ public class Database {
     public static void generateCustomer() {
         // List of random names
         String[] Names = {"Arttu", "Lotta", "Evander", "Elva", "Helga",
-            "Johanna", "Arzhel", "Konstantin", "Lindsay", "Forbes",
+            "Johanna", "Sveinn", "Konstantin", "Lindsay", "Forbes",
             "Jaakob", "Viljo", "Jenna", "Kári", "Boyd", "Yannig",
             "Ellar", "Päivi", "Máel", "Coluim", "Arnar", "Borghildur",
-            "Guðríður", "Greer", "Tryggvi","Hrafnkell", "Erskine", "Gordon",
+            "Guðríður", "Einar", "Tryggvi","Hrafnkell", "Erskine", "Gordon",
             "Anniina", "Sylvi", "Snorri", "Matthias" };
 
         try {
+
             stmt.executeUpdate("drop table if exists Customer");
             stmt.executeUpdate("CREATE TABLE Customer (username STRING, userid INTEGER, PRIMARY KEY(userid))");
 
@@ -127,7 +134,6 @@ public class Database {
                 // For debugging:
                 System.out.println(i + " : " +  Names[i]);
 
-                // pstmt.executeUpdate();
                 pstmt.addBatch();
             }
             pstmt.executeBatch();
@@ -141,9 +147,6 @@ public class Database {
     }
 
     public static void generateCompany() {
-        String[] Airlines = { "Air Iceland Connect", "Icelandair", "Eagle Air",
-            "Norlandair", "Finnair", "Scandinavian Airlines",
-            "Ryanair", "Lufthansa Group", "easyJet", "SAS", "Wizz Air" };
 
         try {
             stmt.executeUpdate("drop table if exists Company");
@@ -177,26 +180,8 @@ public class Database {
         int price, n, r, r2 = 0;
         String classtype;
 
-        Random rand = new Random();
-
+        // Fix later, generate better seats
         String[] Seats = { "01A", "14D", "48I"};
-        String[] FlightNR = new String[Seats.length];
-        String[] FlightPrefix = { "5X", "AA", "AC", "AM", "AS", "AY", "B6", "BA",
-            "BC", "BG", "CI", "CP", "D5", "D7", "DJ", "DL",
-            "EK", "EY", "F",  "FX", "HA", "JL", "KE", "LA",
-            "LH", "LJ", "LO", "LY", "MH", "MM", "NH", "NK",
-            "NU", "NZ", "QF", "QK", "QR", "SG", "SK", "SQ",
-            "TK", "TN", "UA", "VA", "WN", "WS",
-        };
-
-        for (int i = 0; i < Seats.length; i++){
-            r  = rand.nextInt(FlightPrefix.length);
-
-            r2 = rand.nextInt(999);
-            FlightNR[i] = "" + FlightPrefix[r] + (1+r2);
-            System.out.print("FLightnr: " + FlightNR[i] + "\n" );
-        };
-
         try {
             stmt.executeUpdate("drop table if exists Seat");
             stmt.executeUpdate("CREATE TABLE Seat (seatnumber VARCHAR(4), flightnumber VARCHAR(8), class STRING, price VARCHAR(28), reservation STRING , PRIMARY KEY(seatnumber, flightnumber ), FOREIGN KEY(flightnumber) REFERENCES Flight(number), FOREIGN KEY(reservation) REFERENCES Customer(userid))");
@@ -225,15 +210,15 @@ public class Database {
                 price = 1000 + rand.nextInt(2999);
 
                 pstmt.setString(1, Seats[i]);    //Note index  starts with 1
-                pstmt.setString(2, FlightNR[i]);
+                pstmt.setString(2, genFlightNumber());
                 pstmt.setString(3, classtype);
                 pstmt.setInt(   4,    price);
                 pstmt.setString(5, "NULL");      //Fix  later?
 
                 // For debugging:
                 System.out.println(i + " : " +  Seats[i]);
+                // System.out.print("FLightnr: " + FlightNR[i] + "\n" );
 
-                // pstmt.executeUpdate();
                 pstmt.addBatch();
             }
             pstmt.executeBatch();
@@ -247,8 +232,107 @@ public class Database {
 
     }
 
-    public static void main(String[] args) throws ClassNotFoundException
-    {
+    public static String genFlightNumber(){
+        // Flight number is a two letter prefix with a 3 digit number
+        String[] FlightPrefix = { "5X", "AA", "AC", "AM", "AS", "AY", "B6", "BA",
+            "BC", "BG", "CI", "CP", "D5", "D7", "DJ", "DL",
+            "EK", "EY", "F",  "FX", "HA", "JL", "KE", "LA",
+            "LH", "LJ", "LO", "LY", "MH", "MM", "NH", "NK",
+            "NU", "NZ", "QF", "QK", "QR", "SG", "SK", "SQ",
+            "TK", "TN", "UA", "VA", "WN", "WS",
+        };
+        int r = rand.nextInt(FlightPrefix.length);
+
+        return "" + FlightPrefix[r] + rand.nextInt(999);
+    }
+
+    public static String genRandomAircraft(){
+        String[] Aircraft = { "Airbus A220", "Airbus A319/A320/A321", "Airbus A330", "Airbus A350 XWB",
+            "Airbus A380", "Antonov An-148/An-158", "Boeing 737",
+            "Boeing 747", "Boeing 767", "Boeing 777",
+            "Boeing 787 Dreamliner", "Bombardier CRJ700/CRJ705/CRJ900/CRJ1000", "Comac ARJ21 Xiangfeng",
+            "Comac C919", "Embraer ERJ 135/ERJ 140/ERJ 145", "Embraer E-170/E-175/E-190/E-195",
+            "Ilyushin Il-96", "Irkut MC-21", "Mitsubishi Regional Jet",
+            "Sukhoi Superjet SSJ100", "Tupolev Tu-204/Tu-214" };
+
+        int r = rand.nextInt(Aircraft.length);
+
+        return Aircraft[r];
+    }
+
+    public static String genRandomAmenities () {
+        String[] Amenities = { "In-flight meal", "Drinks",
+            "Music", "Television",
+            "Coffee/tea", "Free blankets",
+            "Wi-fi", "Boutique",
+        };
+
+        String amen ="";
+
+        int r = rand.nextInt(Amenities.length);
+
+        for (int i = 0; i < r; i++ ){
+            amen += Amenities[rand.nextInt(Amenities.length)] + ", ";
+        }
+        return amen;
+    }
+
+
+    public static void generateFlights() {
+        // Hold on to your hats, we are about to get the current time in Java
+        long time = System.currentTimeMillis();
+
+        int numberOfFlights = 20;
+
+        // Generate flight number test.
+        for(int i = 0; i < numberOfFlights ; i++){
+            System.out.println("TEST: " + genFlightNumber());
+        }
+
+        try {
+            // conn.setAutoCommit(true); // Remove later
+            stmt.executeUpdate("drop table if exists Flight");
+            stmt.executeUpdate("CREATE TABLE Flight (number VARCHAR(24), takeOff DATETIME, landing DATETIME, origin STRING, dest STRING, aircraft VARCHAR(128), compname VARCHAR(128), amenities STRING, PRIMARY KEY (number, takeOff, origin), FOREIGN KEY(origin) REFERENCES Airport (airportname), FOREIGN KEY(dest) REFERENCES Airport (airportname), FOREIGN KEY(compname) REFERENCES Company (compname))");
+
+            pstmt = conn.prepareStatement("insert into  Flight values(?, ?, ?, ?, ?, ?, ?, ?)");
+            // Insert flights into db
+            for (int i = 0; i < numberOfFlights; i++){
+                // Generate takeoff and landing with random offset, might need adjustment:
+                java.sql.Timestamp takeofftime = new java.sql.Timestamp(time + (1800000 * rand.nextInt(10)));
+                java.sql.Timestamp landingtime = new java.sql.Timestamp(time + (1800000 * rand.nextInt(30)));
+
+                pstmt.setString(1, genFlightNumber() );   // Flightnumber
+
+                // Need to adjust time on this.
+                pstmt.setTimestamp(2, takeofftime); // takeofftime
+                pstmt.setTimestamp(3, landingtime); // landingtime
+
+                // Whatever random origin and destination
+                pstmt.setString(4, Countries[rand.nextInt(Countries.length)]); // origin
+                pstmt.setString(5, Countries[rand.nextInt(Countries.length)]); // dest
+
+                pstmt.setString(6, genRandomAircraft()); // Random aircraft
+                pstmt.setString(7, Airlines[rand.nextInt(Airlines.length)]); // Random airline
+                pstmt.setString(8, genRandomAmenities() ); // Generates random amenities
+
+                // For debugging:
+                System.out.println("Takeoff: " + takeofftime);
+                System.out.println("Landing:" + landingtime);
+
+                pstmt.addBatch();
+            }
+            pstmt.executeBatch();
+            conn.commit();
+
+        } catch(SQLException e) {
+            System.out.println("Error in generateFlights");
+            System.err.println(e.getMessage());
+        }
+        return;
+
+    }
+
+    public static void main(String[] args) throws ClassNotFoundException {
         // load the sqlite-JDBC driver using the current class loader
         Class.forName("org.sqlite.JDBC");
 
@@ -270,15 +354,11 @@ public class Database {
             // Airport:
             generateAirports();
 
-
             // Seat:
             generateSeat();
 
             // Flight:
-            // conn.setAutoCommit(true); // Remove later
-            stmt.executeUpdate("drop table if exists Flight");
-            stmt.executeUpdate("CREATE TABLE Flight (number VARCHAR(24), takeOff DATETIME, landing DATETIME, origin STRING, dest STRING, aircraft VARCHAR(128), compname VARCHAR(128), amenities STRING, PRIMARY KEY (number, takeOff, origin), FOREIGN KEY(origin) REFERENCES Airport (airportname), FOREIGN KEY(dest) REFERENCES Airport (airportname), FOREIGN KEY(compname) REFERENCES Company (compname))");
-            stmt.executeUpdate("insert into Flight values('FI614',  '2020-03-27 22:30:45', '2020-03-28 05:00:00', 'Leifstod KEF', 'John F. Kennedy NY', 'Boeing737max', 'ICELANDAIR', 'Food drinks and onboard shop')");
+            generateFlights();
 
             pstmt.close();
             conn.close();
