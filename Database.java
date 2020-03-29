@@ -147,11 +147,9 @@ public class Database {
     }
 
     public static void generateCompany() {
-
         try {
             stmt.executeUpdate("drop table if exists Company");
             stmt.executeUpdate("CREATE TABLE Company (compname VARCHAR(128), compid INTEGER, PRIMARY KEY(compname))");
-            stmt.executeUpdate("insert into Company values('ICELANDAIR', 1944)");
 
             pstmt = conn.prepareStatement ("insert into Company values(?, ?)");
 
